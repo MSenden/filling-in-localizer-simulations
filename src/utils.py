@@ -30,6 +30,12 @@ parameters = {
     'post_rest': 0.5,
 }
 
+def compute_box(x, y, border):
+    vertical_strip = np.abs(x) < border
+    horizontal_strip = np.abs(y) < border
+    box = np.logical_and(vertical_strip, horizontal_strip)
+    return box
+
 def create_stimulus(x,y,parameters):
     center = parameters['center']
     width = parameters['width']
@@ -48,9 +54,10 @@ def create_stimulus(x,y,parameters):
         for j in range(steps):
             inner_border = j * width
             outer_border = (j + 1) * width
-            horizontal = (x > inner_border) & (x <= outer_border)
-            vertical = (y > inner_border) & (y <= outer_border)
-            stimulus[:, int(pre_rest + i * steps + j)] = np.logical_and(horizontal, vertical)
+            inner_box = compute_box(x, y, inner_border)
+            outer_box = compute_box(x, y, outer_border)
+            
+            stimulus[:, int(pre_rest + i * steps + j)] = np.logical_xor(inner_box, outer_box)
     
     return stimulus
 
